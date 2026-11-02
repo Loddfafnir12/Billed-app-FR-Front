@@ -39,10 +39,13 @@ export default class Login {
 
   handleSubmitAdmin = e => {
     e.preventDefault()
+    // [Bug report - Login] On lit ici les champs du formulaire ADMIN (admin-email-input, admin-password-input).
+    // Avant, le code cherchait les champs employee-*, qui n'existent pas dans ce formulaire : querySelector
+    // renvoyait null et .value plantait (TypeError: Cannot read properties of null).
     const user = {
       type: "Admin",
-      email: e.target.querySelector(`input[data-testid="admin-email-input"]`).value, //changement de employee a admin le bug vient de la 
-      password: e.target.querySelector(`input[data-testid="admin-password-input"]`).value, //changement de employee a admin le bug vient de la 
+      email: e.target.querySelector(`input[data-testid="admin-email-input"]`).value,
+      password: e.target.querySelector(`input[data-testid="admin-password-input"]`).value,
       status: "connected"
     }
     this.localStorage.setItem("user", JSON.stringify(user))

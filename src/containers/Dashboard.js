@@ -131,23 +131,28 @@ export default class {
   }
 
   handleShowTickets(e, bills, index) {
-    if (this.counter === undefined || this.index !== index) this.counter = 0
-    if (this.index === undefined || this.index !== index) this.index = index
-    if (this.counter % 2 === 0) {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(0deg)'})
-      $(`#status-bills-container${this.index}`)
-        .html(cards(filteredBills(bills, getStatus(this.index))))
-      this.counter ++
+    // [Bug hunt - Dashboard] On doit pouvoir déplier plusieurs listes et ouvrir les tickets de chacune.
+    // Avant : un seul compteur (this.counter) et un seul index (this.index) servaient à toutes les listes,
+    // et à handleEditTicket. Dès qu'on touchait à une autre liste, l'état de la première était perdu.
+    // Maintenant : on retient séparément si chaque liste (1, 2, 3) est dépliée.
+    if (this.openedLists === undefined) this.openedLists = {}
+    const listBills = filteredBills(bills, getStatus(index))
+    if (!this.openedLists[index]) {
+      $(`#arrow-icon${index}`).css({ transform: 'rotate(0deg)'})
+      $(`#status-bills-container${index}`)
+        .html(cards(listBills))
+      // Avant : on liait le clic de TOUS les tickets à chaque dépliage, donc ceux des listes déjà ouvertes
+      // recevaient un 2e gestionnaire : un clic appelait handleEditTicket 2 fois (formulaire affiché puis aussitôt
+      // remplacé par la grosse icône). Maintenant : seuls les tickets de la liste qui vient de s'ouvrir sont liés.
+      listBills.forEach(bill => {
+        $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+      })
     } else {
-      $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
-      $(`#status-bills-container${this.index}`)
+      $(`#arrow-icon${index}`).css({ transform: 'rotate(90deg)'})
+      $(`#status-bills-container${index}`)
         .html("")
-      this.counter ++
     }
-
-    bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
-    })
+    this.openedLists[index] = !this.openedLists[index]
 
     return bills
 

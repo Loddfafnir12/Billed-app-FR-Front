@@ -20,7 +20,11 @@ const row = (bill) => {
   }
 
 const rows = (data) => {
-  return (data && data.length) ? [...data].sort((a,b)=>{return new Date(b.date) - new Date(a.date)}).map(bill => row(bill)).join("") : "" //ajout d'un tri par date décroissante pour la validation du jtest
+  // [Bug report - Bills] Tri des notes de frais de la plus récente à la plus ancienne.
+  // Ce tri est nécessaire pour le test Jest, qui appelle BillsUI directement avec des dates ISO ("2004-04-04").
+  // Dans l'appli, getBills() (containers/Bills.js) a déjà trié avant de formater les dates : ce second tri
+  // ne change alors rien. [...data] trie une copie pour ne pas modifier le tableau reçu.
+  return (data && data.length) ? [...data].sort((a,b)=>{return new Date(b.date) - new Date(a.date)}).map(bill => row(bill)).join("") : ""
 }
 
 export default ({ data: bills, loading, error }) => {
