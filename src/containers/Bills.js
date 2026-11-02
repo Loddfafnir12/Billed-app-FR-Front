@@ -33,7 +33,17 @@ export default class {
       .bills()
       .list()
       .then(snapshot => {
-        const bills = snapshot
+        // [Bug report - Bills] Les notes de frais doivent s'afficher de la plus récente à la plus ancienne.
+        // Le tri est fait ICI, avant le .map() qui appelle formatDate :
+        //  - doc.date est encore une date ISO ("2004-04-04") que new Date() sait toujours lire ;
+        //    une fois formatée ("4 Avr. 04"), new Date() renvoie Invalid Date pour certains mois
+        //    (Avr, Fév, Déc, Aoû...) et le tri ne serait plus fiable.
+        //  - [...snapshot] trie une copie : .sort() modifie le tableau sur lequel il est appelé,
+        //    on évite donc de changer le tableau reçu de l'API.
+        //  - new Date(b.date) - new Date(a.date) donne un nombre (millisecondes) : positif si b est plus
+        //    récente que a, donc b passe avant a.
+        const bills = [...snapshot]
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
           .map(doc => {
             try {
               return {
