@@ -18,8 +18,11 @@ export default class NewBill {
   handleChangeFile = e => {
     e.preventDefault()
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
-    const filePath = e.target.value.split(/\\/g)
-    const fileName = filePath[filePath.length-1]
+    // Fenêtre de choix de fichier annulée : pas de fichier, donc rien à contrôler ni à envoyer.
+    if (!file) return
+    // file.name plutôt que e.target.value : le navigateur y met un chemin ("C:\fakepath\nom.png")
+    // et jsdom (Jest) y met une chaîne vide. file.name donne toujours le nom du fichier.
+    const fileName = file.name
     // [Bug hunt - Bills] Seuls les justificatifs jpg, jpeg ou png sont acceptés.
     // Le back-end enregistre 'null' comme nom et chemin de fichier pour tout autre format,
     // d'où le nom de fichier "null" côté admin et la modale sans image.
